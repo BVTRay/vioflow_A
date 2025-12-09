@@ -1,60 +1,69 @@
-export type ModuleType = 'library' | 'review' | 'delivery' | 'settings';
 
-export interface FileNode {
+export type ModuleType = 'library' | 'review' | 'delivery' | 'showcase' | 'settings';
+export type ProjectStatus = 'active' | 'finalized' | 'delivered' | 'archived';
+
+export interface Asset {
+  id: string;
+  projectId: string;
+  name: string;
+  type: 'video' | 'image' | 'audio';
+  url: string; // Mock URL or placeholder
+  version: number;
+  uploadTime: string;
+  isCaseFile: boolean; // For Showcase module
+  size: string;
+  duration?: string;
+}
+
+export interface Project {
   id: string;
   name: string;
-  type: 'group' | 'project' | 'file';
-  meta?: string;
-  children?: FileNode[];
-  status?: 'active' | 'archived';
+  client: string;
+  lead: string;
+  group: string; // e.g., "Active Projects", "Nike"
+  status: ProjectStatus;
+  createdDate: string;
+  thumbnail?: string;
+}
+
+export interface DeliveryData {
+  projectId: string;
+  hasCleanFeed: boolean;
+  hasMusicAuth: boolean;
+  hasMetadata: boolean;
+  packageLink?: string;
+  sentDate?: string;
 }
 
 export interface AppState {
   activeModule: ModuleType;
+  projects: Project[];
+  assets: Asset[];
+  deliveries: DeliveryData[]; // Track delivery status/checklists
+  cart: string[]; // List of Asset IDs for Showcase
+  
+  // UI State
+  selectedProjectId: string | null;
   isReviewMode: boolean;
   showWorkbench: boolean;
   activeDrawer: 'none' | 'transfer' | 'messages';
+  
+  // Retrieval Panel State
+  searchTerm: string;
+  activeTag: string;
 }
 
-export const MOCK_TREE_DATA: FileNode[] = [
-  {
-    id: 'g1',
-    name: 'ACTIVE PROJECTS',
-    type: 'group',
-    children: [
-      { id: 'p1', name: 'Nike - Air Max Campaign', type: 'project', meta: 'Updated 2m ago' },
-      { id: 'p2', name: 'Netflix - Docu Series', type: 'project', meta: 'In Review' },
-      { id: 'p3', name: 'Spotify - Wrapper 2024', type: 'project', meta: 'Draft' },
-    ]
-  },
-  {
-    id: 'g2',
-    name: 'CLIENT DELIVERIES',
-    type: 'group',
-    children: [
-      { id: 'p4', name: 'Porsche - 911 GT3', type: 'project', meta: 'Sent' },
-      { id: 'p5', name: 'Red Bull - F1 Highlights', type: 'project', meta: 'Pending' },
-    ]
-  },
-  {
-    id: 'g3',
-    name: 'ASSETS LIBRARY',
-    type: 'group',
-    children: [
-      { id: 'p6', name: 'Stock Footage - Nature', type: 'project', meta: '45 items' },
-      { id: 'p7', name: 'SFX Bundle 2024', type: 'project', meta: '120 items' },
-    ]
-  }
-];
-
-export const MOCK_ARCHIVE_DATA: FileNode[] = [
-  {
-    id: 'g_arch',
-    name: 'ARCHIVED (2023)',
-    type: 'group',
-    children: [
-      { id: 'a1', name: 'Q4 Marketing Assets', type: 'project', status: 'archived' },
-      { id: 'a2', name: 'Legacy Brand Kit', type: 'project', status: 'archived' },
-    ]
-  }
-];
+export type Action =
+  | { type: 'SET_MODULE'; payload: ModuleType }
+  | { type: 'SELECT_PROJECT'; payload: string }
+  | { type: 'ADD_PROJECT'; payload: Project }
+  | { type: 'ADD_ASSET'; payload: Asset }
+  | { type: 'FINALIZE_PROJECT'; payload: string } // Moves to Delivery
+  | { type: 'UPDATE_DELIVERY_CHECKLIST'; payload: { projectId: string; field: keyof DeliveryData; value: boolean } }
+  | { type: 'COMPLETE_DELIVERY'; payload: string } // Moves to Delivered
+  | { type: 'TOGGLE_CART_ITEM'; payload: string } // For Showcase
+  | { type: 'SET_SEARCH'; payload: string }
+  | { type: 'SET_TAG'; payload: string }
+  | { type: 'TOGGLE_DRAWER'; payload: 'none' | 'transfer' | 'messages' }
+  | { type: 'TOGGLE_REVIEW_MODE'; payload: boolean }
+  | { type: 'TOGGLE_WORKBENCH'; payload: boolean };
