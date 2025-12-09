@@ -1,5 +1,7 @@
+
 import React from 'react';
-import { ArrowLeft, MessageSquare, Mic, SkipBack, Play, SkipForward, Settings2, Download } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Mic, SkipBack, Play, SkipForward, Settings2, Download, CheckCircle } from 'lucide-react';
+import { useStore } from '../../App';
 
 interface ReviewOverlayProps {
   isOpen: boolean;
@@ -7,6 +9,10 @@ interface ReviewOverlayProps {
 }
 
 export const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ isOpen, onClose }) => {
+  const { state, dispatch } = useStore();
+  const { selectedVideoId, videos } = state;
+  const video = videos.find(v => v.id === selectedVideoId);
+
   if (!isOpen) return null;
 
   return (
@@ -24,18 +30,17 @@ export const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ isOpen, onClose })
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm font-medium">Exit Review</span>
             </button>
-            <div className="text-sm font-mono text-zinc-400">A001_C014_0823_TH.mov</div>
+            <div className="text-sm font-mono text-zinc-400">{video?.name || 'No Video Selected'}</div>
         </div>
 
         {/* Video Placeholder */}
         <div className="flex-1 flex items-center justify-center p-8">
             <div className="aspect-video w-full max-w-5xl bg-zinc-900 rounded-lg shadow-2xl relative overflow-hidden ring-1 ring-zinc-800">
                 <img 
-                    src="https://picsum.photos/seed/42/1920/1080" 
+                    src={`https://picsum.photos/seed/${video?.id || '404'}/1920/1080`} 
                     className="w-full h-full object-cover opacity-60" 
                     alt="Review Content"
                 />
-                {/* Center Play Button */}
                  <div className="absolute inset-0 flex items-center justify-center">
                     <button className="w-20 h-20 bg-white/10 hover:bg-indigo-500/90 backdrop-blur-sm rounded-full flex items-center justify-center transition-all group">
                          <Play className="w-8 h-8 fill-white text-white pl-1 group-hover:scale-110 transition-transform" />
@@ -46,7 +51,6 @@ export const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ isOpen, onClose })
 
         {/* Bottom Controls */}
         <div className="h-24 bg-zinc-950 border-t border-zinc-800 px-8 flex flex-col justify-center gap-4">
-             {/* Scrubber */}
              <div className="w-full h-1.5 bg-zinc-800 rounded-full cursor-pointer group relative">
                  <div className="absolute top-0 left-0 h-full w-[35%] bg-indigo-500 rounded-full group-hover:bg-indigo-400"></div>
                  <div className="absolute top-1/2 -translate-y-1/2 left-[35%] w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"></div>
@@ -73,29 +77,26 @@ export const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ isOpen, onClose })
       {/* Right: Comments Sidebar */}
       <aside className="w-[360px] bg-zinc-900 border-l border-zinc-800 flex flex-col shrink-0 relative z-20">
          <div className="h-14 border-b border-zinc-800 flex items-center px-4 justify-between bg-zinc-900">
-             <span className="font-semibold text-sm text-zinc-200">Comments (4)</span>
-             <button className="p-2 hover:bg-zinc-800 rounded text-zinc-400">
-                 <Settings2 className="w-4 h-4" />
-             </button>
+             <span className="font-semibold text-sm text-zinc-200">Comments</span>
+             {video?.status !== 'annotated' && (
+                 <button 
+                    onClick={() => {
+                        if (video) dispatch({ type: 'UPDATE_VIDEO_STATUS', payload: { videoId: video.id, status: 'annotated' } });
+                        onClose();
+                    }}
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded transition-colors"
+                 >
+                     <CheckCircle className="w-3.5 h-3.5" />
+                     Complete
+                 </button>
+             )}
          </div>
          
          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-             <Comment 
-                user="Sarah D." 
-                time="10:23 AM" 
-                text="Color grading looks a bit too warm here, can we pull back the saturation on the reds?" 
-                timestamp="00:02:14"
-                active
-             />
-             <Comment 
-                user="Mike R." 
-                time="11:05 AM" 
-                text="Approved for lock." 
-                timestamp="00:04:00"
-             />
+             <Comment user="Sarah D." time="10:23 AM" text="Can we pull back the saturation on the reds?" timestamp="00:02:14" active />
+             <Comment user="Mike R." time="11:05 AM" text="Approved for lock." timestamp="00:04:00" />
          </div>
 
-         {/* Input */}
          <div className="p-4 border-t border-zinc-800 bg-zinc-900">
              <div className="relative">
                  <input 

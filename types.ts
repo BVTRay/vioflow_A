@@ -1,29 +1,32 @@
 
 export type ModuleType = 'library' | 'review' | 'delivery' | 'showcase' | 'settings';
 export type ProjectStatus = 'active' | 'finalized' | 'delivered' | 'archived';
+export type VideoStatus = 'initial' | 'annotated' | 'approved';
 
-export interface Asset {
+export interface Video {
   id: string;
   projectId: string;
-  name: string;
+  name: string; // Filename
   type: 'video' | 'image' | 'audio';
-  url: string; // Mock URL or placeholder
+  url: string; 
   version: number;
   uploadTime: string;
-  isCaseFile: boolean; // For Showcase module
+  isCaseFile: boolean; // Marked for Showcase
   size: string;
   duration?: string;
+  status: VideoStatus;
+  changeLog?: string;
 }
 
 export interface Project {
   id: string;
-  name: string;
+  name: string; // Format: YYMM_Name
   client: string;
   lead: string;
-  group: string; // e.g., "Active Projects", "Nike"
+  postLead: string;
+  group: string; 
   status: ProjectStatus;
   createdDate: string;
-  thumbnail?: string;
 }
 
 export interface DeliveryData {
@@ -38,12 +41,13 @@ export interface DeliveryData {
 export interface AppState {
   activeModule: ModuleType;
   projects: Project[];
-  assets: Asset[];
-  deliveries: DeliveryData[]; // Track delivery status/checklists
-  cart: string[]; // List of Asset IDs for Showcase
+  videos: Video[]; // Renamed from assets
+  deliveries: DeliveryData[];
+  cart: string[]; // List of Video IDs for Showcase
   
   // UI State
   selectedProjectId: string | null;
+  selectedVideoId: string | null;
   isReviewMode: boolean;
   showWorkbench: boolean;
   activeDrawer: 'none' | 'transfer' | 'messages';
@@ -56,14 +60,17 @@ export interface AppState {
 export type Action =
   | { type: 'SET_MODULE'; payload: ModuleType }
   | { type: 'SELECT_PROJECT'; payload: string }
+  | { type: 'SELECT_VIDEO'; payload: string | null }
   | { type: 'ADD_PROJECT'; payload: Project }
-  | { type: 'ADD_ASSET'; payload: Asset }
-  | { type: 'FINALIZE_PROJECT'; payload: string } // Moves to Delivery
+  | { type: 'ADD_VIDEO'; payload: Video }
+  | { type: 'FINALIZE_PROJECT'; payload: string } // Review -> Delivery
+  | { type: 'COMPLETE_DELIVERY'; payload: string } // Delivery -> Archive/Showcase Source
   | { type: 'UPDATE_DELIVERY_CHECKLIST'; payload: { projectId: string; field: keyof DeliveryData; value: boolean } }
-  | { type: 'COMPLETE_DELIVERY'; payload: string } // Moves to Delivered
-  | { type: 'TOGGLE_CART_ITEM'; payload: string } // For Showcase
+  | { type: 'TOGGLE_CASE_FILE'; payload: string } // Toggle isCaseFile on a Video
+  | { type: 'TOGGLE_CART_ITEM'; payload: string } // Showcase Cart
   | { type: 'SET_SEARCH'; payload: string }
   | { type: 'SET_TAG'; payload: string }
   | { type: 'TOGGLE_DRAWER'; payload: 'none' | 'transfer' | 'messages' }
   | { type: 'TOGGLE_REVIEW_MODE'; payload: boolean }
-  | { type: 'TOGGLE_WORKBENCH'; payload: boolean };
+  | { type: 'TOGGLE_WORKBENCH'; payload: boolean }
+  | { type: 'UPDATE_VIDEO_STATUS'; payload: { videoId: string; status: VideoStatus } };

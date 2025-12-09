@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Home, Layers, PlayCircle, Settings, HardDrive } from 'lucide-react';
+import { Home, Layers, PlayCircle, Settings, HardDrive, Clapperboard } from 'lucide-react';
 import { ModuleType } from '../../types';
 
 interface SidebarProps {
@@ -9,9 +10,9 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeModule, onChangeModule }) => {
   const navItems = [
-    { id: 'library', icon: Layers, label: '媒资', type: 'library' as ModuleType },
-    { id: 'review', icon: PlayCircle, label: '审片', type: 'review' as ModuleType },
+    { id: 'review', icon: PlayCircle, label: '审阅', type: 'review' as ModuleType },
     { id: 'delivery', icon: HardDrive, label: '交付', type: 'delivery' as ModuleType },
+    { id: 'showcase', icon: Clapperboard, label: '案例', type: 'showcase' as ModuleType },
   ];
 
   return (
@@ -43,6 +44,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeModule, onChangeModule }
       </div>
 
       <div className="mt-auto flex flex-col gap-4 w-full px-2 pb-4">
+        <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-xs font-bold">
+            JD
+        </div>
         <SidebarItem 
           active={activeModule === 'settings'} 
           icon={Settings} 
