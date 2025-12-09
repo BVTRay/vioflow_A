@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Layers, PlayCircle, Settings, HardDrive, Clapperboard } from 'lucide-react';
+import { PlayCircle, Settings, HardDrive, Clapperboard } from 'lucide-react';
 import { ModuleType } from '../../types';
 
 interface SidebarProps {
@@ -18,20 +18,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeModule, onChangeModule }
   return (
     <nav className="fixed left-0 top-14 bottom-0 w-[64px] bg-zinc-950 border-r border-zinc-800 z-40 flex flex-col items-center py-4 gap-6">
       
-      {/* Top Section */}
-      <div className="flex flex-col gap-2 w-full px-2">
-        <SidebarItem 
-          active={false} 
-          icon={Home} 
-          label="主页" 
-          onClick={() => {}} 
-        />
-      </div>
-
-      <div className="w-8 h-px bg-zinc-800/50"></div>
-
       {/* Main Modules */}
-      <div className="flex flex-col gap-2 w-full px-2">
+      <div className="flex flex-col gap-2 w-full px-2 pt-2">
         {navItems.map((item) => (
           <SidebarItem 
             key={item.id}
