@@ -32,9 +32,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeModule, onChangeModule }
       </div>
 
       <div className="mt-auto flex flex-col gap-4 w-full px-2 pb-4">
-        <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-xs font-bold">
-            JD
-        </div>
         <SidebarItem 
           active={activeModule === 'settings'} 
           icon={Settings} 

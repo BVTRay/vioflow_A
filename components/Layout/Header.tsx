@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bell, ArrowRightLeft, Search, Command } from 'lucide-react';
 import { AppState } from '../../types';
@@ -23,7 +24,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleDrawer, activeDrawer }) 
       {/* Center: Global Omni-search (Visual only) */}
       <div className="hidden md:flex items-center bg-zinc-900 border border-zinc-800 rounded-md px-3 py-1.5 w-[400px] text-sm text-zinc-500 hover:border-zinc-700 transition-colors cursor-text group">
         <Search className="w-4 h-4 mr-2 group-hover:text-zinc-400" />
-        <span className="flex-1">Jump to project, file, or setting...</span>
+        <span className="flex-1">跳转至项目、文件或设置...</span>
         <div className="flex items-center gap-1">
           <Command className="w-3 h-3" />
           <span className="text-xs">K</span>

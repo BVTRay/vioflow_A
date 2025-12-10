@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { X, ArrowRight } from 'lucide-react';
 
@@ -45,7 +46,7 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, children
         {/* Footer */}
         <div className="p-6 border-t border-zinc-800 bg-zinc-900/30">
             <button className="w-full bg-zinc-100 hover:bg-white text-zinc-950 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
-                <span>View All History</span>
+                <span>查看全部历史</span>
                 <ArrowRight className="w-4 h-4" />
             </button>
         </div>

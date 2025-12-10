@@ -14,6 +14,7 @@ export interface Video {
   isCaseFile: boolean; // Marked for Showcase
   size: string;
   duration?: string;
+  resolution?: string; // e.g., '1920x1080'
   status: VideoStatus;
   changeLog?: string;
 }
@@ -27,6 +28,7 @@ export interface Project {
   group: string; 
   status: ProjectStatus;
   createdDate: string;
+  team: string[]; // Team members visible to this project
 }
 
 export interface DeliveryData {
@@ -38,12 +40,21 @@ export interface DeliveryData {
   sentDate?: string;
 }
 
+export interface UploadItem {
+  id: string;
+  filename: string;
+  progress: number;
+  status: 'uploading' | 'completed' | 'error';
+  targetProjectName: string;
+}
+
 export interface AppState {
   activeModule: ModuleType;
   projects: Project[];
   videos: Video[]; // Renamed from assets
   deliveries: DeliveryData[];
   cart: string[]; // List of Video IDs for Showcase
+  uploadQueue: UploadItem[]; // Global upload queue
   
   // UI State
   selectedProjectId: string | null;
@@ -51,6 +62,8 @@ export interface AppState {
   isReviewMode: boolean;
   showWorkbench: boolean;
   activeDrawer: 'none' | 'transfer' | 'messages';
+  browserViewMode: 'grid' | 'list';
+  browserCardSize: 'small' | 'medium' | 'large'; // NEW: Card Size State
   
   // Retrieval Panel State
   searchTerm: string;
@@ -62,6 +75,7 @@ export type Action =
   | { type: 'SELECT_PROJECT'; payload: string }
   | { type: 'SELECT_VIDEO'; payload: string | null }
   | { type: 'ADD_PROJECT'; payload: Project }
+  | { type: 'UPDATE_PROJECT'; payload: Project }
   | { type: 'ADD_VIDEO'; payload: Video }
   | { type: 'FINALIZE_PROJECT'; payload: string } // Review -> Delivery
   | { type: 'COMPLETE_DELIVERY'; payload: string } // Delivery -> Archive/Showcase Source
@@ -73,4 +87,9 @@ export type Action =
   | { type: 'TOGGLE_DRAWER'; payload: 'none' | 'transfer' | 'messages' }
   | { type: 'TOGGLE_REVIEW_MODE'; payload: boolean }
   | { type: 'TOGGLE_WORKBENCH'; payload: boolean }
-  | { type: 'UPDATE_VIDEO_STATUS'; payload: { videoId: string; status: VideoStatus } };
+  | { type: 'UPDATE_VIDEO_STATUS'; payload: { videoId: string; status: VideoStatus } }
+  | { type: 'SET_BROWSER_VIEW_MODE'; payload: 'grid' | 'list' }
+  | { type: 'SET_BROWSER_CARD_SIZE'; payload: 'small' | 'medium' | 'large' } // NEW
+  | { type: 'ADD_UPLOAD'; payload: UploadItem }
+  | { type: 'UPDATE_UPLOAD_PROGRESS'; payload: { id: string; progress: number } }
+  | { type: 'COMPLETE_UPLOAD'; payload: string }; // Remove from queue

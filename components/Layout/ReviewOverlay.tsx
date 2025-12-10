@@ -28,9 +28,9 @@ export const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ isOpen, onClose })
                 className="flex items-center gap-2 text-zinc-300 hover:text-white bg-zinc-900/50 hover:bg-zinc-800/80 px-4 py-2 rounded-full backdrop-blur-md transition-all border border-white/5"
             >
                 <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm font-medium">Exit Review</span>
+                <span className="text-sm font-medium">退出审阅</span>
             </button>
-            <div className="text-sm font-mono text-zinc-400">{video?.name || 'No Video Selected'}</div>
+            <div className="text-sm font-mono text-zinc-400">{video?.name || '未选择视频'}</div>
         </div>
 
         {/* Video Placeholder */}
@@ -77,7 +77,7 @@ export const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ isOpen, onClose })
       {/* Right: Comments Sidebar */}
       <aside className="w-[360px] bg-zinc-900 border-l border-zinc-800 flex flex-col shrink-0 relative z-20">
          <div className="h-14 border-b border-zinc-800 flex items-center px-4 justify-between bg-zinc-900">
-             <span className="font-semibold text-sm text-zinc-200">Comments</span>
+             <span className="font-semibold text-sm text-zinc-200">评论</span>
              {video?.status !== 'annotated' && (
                  <button 
                     onClick={() => {
@@ -87,21 +87,21 @@ export const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ isOpen, onClose })
                     className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded transition-colors"
                  >
                      <CheckCircle className="w-3.5 h-3.5" />
-                     Complete
+                     完成
                  </button>
              )}
          </div>
          
          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-             <Comment user="Sarah D." time="10:23 AM" text="Can we pull back the saturation on the reds?" timestamp="00:02:14" active />
-             <Comment user="Mike R." time="11:05 AM" text="Approved for lock." timestamp="00:04:00" />
+             <Comment user="Sarah D." time="10:23 AM" text="这里的红色饱和度能降低一点吗？" timestamp="00:02:14" active />
+             <Comment user="Mike R." time="11:05 AM" text="确认锁定。" timestamp="00:04:00" />
          </div>
 
          <div className="p-4 border-t border-zinc-800 bg-zinc-900">
              <div className="relative">
                  <input 
                     type="text" 
-                    placeholder="Add a comment at 00:02:14..." 
+                    placeholder="在 00:02:14 添加评论..." 
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-4 pr-10 py-3 text-sm text-zinc-200 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all"
                  />
                  <button className="absolute right-2 top-2 p-1 text-zinc-500 hover:text-indigo-400">
@@ -129,7 +129,7 @@ const Comment: React.FC<{ user: string, time: string, text: string, timestamp: s
             </div>
             <div className="mt-1.5 flex items-center gap-2">
                 <span className="text-[10px] font-mono text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded cursor-pointer hover:bg-indigo-500/20">{timestamp}</span>
-                <button className="text-[10px] text-zinc-500 hover:text-zinc-300">Reply</button>
+                <button className="text-[10px] text-zinc-500 hover:text-zinc-300">回复</button>
             </div>
         </div>
     </div>
