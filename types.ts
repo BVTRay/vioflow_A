@@ -48,6 +48,14 @@ export interface UploadItem {
   targetProjectName: string;
 }
 
+export interface Notification {
+  id: string;
+  type: 'info' | 'success' | 'alert';
+  title: string;
+  message: string;
+  time: string;
+}
+
 export interface AppState {
   activeModule: ModuleType;
   projects: Project[];
@@ -55,6 +63,7 @@ export interface AppState {
   deliveries: DeliveryData[];
   cart: string[]; // List of Video IDs for Showcase
   uploadQueue: UploadItem[]; // Global upload queue
+  notifications: Notification[]; // Global notifications
   
   // UI State
   selectedProjectId: string | null;
@@ -89,7 +98,9 @@ export type Action =
   | { type: 'TOGGLE_WORKBENCH'; payload: boolean }
   | { type: 'UPDATE_VIDEO_STATUS'; payload: { videoId: string; status: VideoStatus } }
   | { type: 'SET_BROWSER_VIEW_MODE'; payload: 'grid' | 'list' }
-  | { type: 'SET_BROWSER_CARD_SIZE'; payload: 'small' | 'medium' | 'large' } // NEW
+  | { type: 'SET_BROWSER_CARD_SIZE'; payload: 'small' | 'medium' | 'large' }
   | { type: 'ADD_UPLOAD'; payload: UploadItem }
   | { type: 'UPDATE_UPLOAD_PROGRESS'; payload: { id: string; progress: number } }
-  | { type: 'COMPLETE_UPLOAD'; payload: string }; // Remove from queue
+  | { type: 'COMPLETE_UPLOAD'; payload: string }
+  | { type: 'ADD_NOTIFICATION'; payload: Notification }
+  | { type: 'CLEAR_NOTIFICATIONS' };

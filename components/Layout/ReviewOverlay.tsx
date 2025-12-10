@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { ArrowLeft, MessageSquare, Mic, SkipBack, Play, SkipForward, Settings2, Download, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, MessageSquare, Mic, SkipBack, Play, SkipForward, Settings2, Download, CheckCircle, Send, FileText, Loader2 } from 'lucide-react';
 import { useStore } from '../../App';
 
 interface ReviewOverlayProps {
@@ -13,7 +13,61 @@ export const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ isOpen, onClose })
   const { selectedVideoId, videos } = state;
   const video = videos.find(v => v.id === selectedVideoId);
 
+  // Local State
+  const [commentInput, setCommentInput] = useState('');
+  const [comments, setComments] = useState([
+    { id: 1, user: "Sarah D.", time: "10:23 AM", text: "这里的红色饱和度能降低一点吗？", timestamp: "00:02:14", active: true },
+    { id: 2, user: "Mike R.", time: "11:05 AM", text: "确认锁定。", timestamp: "00:04:00", active: false }
+  ]);
+  const [isExporting, setIsExporting] = useState(false);
+
   if (!isOpen) return null;
+
+  const handleCompleteAnnotation = () => {
+      if (video) {
+          // 1. Update Video Status
+          dispatch({ type: 'UPDATE_VIDEO_STATUS', payload: { videoId: video.id, status: 'annotated' } });
+          
+          // 2. Send Notification
+          dispatch({
+              type: 'ADD_NOTIFICATION',
+              payload: {
+                  id: Date.now().toString(),
+                  type: 'success',
+                  title: '审阅完成',
+                  message: `客户已完成对视频 "${video.name}" 的批注。`,
+                  time: '刚刚'
+              }
+          });
+          
+          onClose();
+      }
+  };
+
+  const handleAddComment = () => {
+      if (!commentInput.trim()) return;
+      
+      const newComment = {
+          id: Date.now(),
+          user: "Guest User",
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          text: commentInput,
+          timestamp: "00:00:15", // Mocked timestamp
+          active: true
+      };
+
+      setComments([...comments, newComment]);
+      setCommentInput('');
+  };
+
+  const handleExportPDF = () => {
+      setIsExporting(true);
+      // Simulate API call / Generation
+      setTimeout(() => {
+          setIsExporting(false);
+          alert(`已生成批注报告: ${video?.name}_Feedback.pdf`);
+      }, 1500);
+  };
 
   return (
     <div className="fixed inset-0 top-14 z-50 bg-zinc-950 flex animate-in fade-in duration-200">
@@ -67,6 +121,16 @@ export const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ isOpen, onClose })
                  </div>
                  
                  <div className="flex items-center gap-4 text-zinc-400">
+                     <button 
+                        onClick={handleExportPDF} 
+                        className="flex items-center gap-2 hover:text-white hover:bg-zinc-800 px-3 py-1.5 rounded transition-colors disabled:opacity-50"
+                        disabled={isExporting}
+                        title="导出审阅报告 (PDF)"
+                     >
+                         {isExporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileText className="w-5 h-5" />}
+                         <span className="text-xs">导出报告</span>
+                     </button>
+                     <div className="h-4 w-px bg-zinc-700"></div>
                      <Settings2 className="w-5 h-5 hover:text-white cursor-pointer" />
                      <Download className="w-5 h-5 hover:text-white cursor-pointer" />
                  </div>
@@ -77,35 +141,51 @@ export const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ isOpen, onClose })
       {/* Right: Comments Sidebar */}
       <aside className="w-[360px] bg-zinc-900 border-l border-zinc-800 flex flex-col shrink-0 relative z-20">
          <div className="h-14 border-b border-zinc-800 flex items-center px-4 justify-between bg-zinc-900">
-             <span className="font-semibold text-sm text-zinc-200">评论</span>
-             {video?.status !== 'annotated' && (
+             <span className="font-semibold text-sm text-zinc-200">批注 ({comments.length})</span>
+             {video?.status !== 'annotated' ? (
                  <button 
-                    onClick={() => {
-                        if (video) dispatch({ type: 'UPDATE_VIDEO_STATUS', payload: { videoId: video.id, status: 'annotated' } });
-                        onClose();
-                    }}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded transition-colors"
+                    onClick={handleCompleteAnnotation}
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded transition-colors shadow-lg shadow-indigo-900/20"
                  >
                      <CheckCircle className="w-3.5 h-3.5" />
-                     完成
+                     完成审阅
                  </button>
+             ) : (
+                 <span className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded text-xs border border-emerald-500/20">
+                     <CheckCircle className="w-3.5 h-3.5" />
+                     已完成
+                 </span>
              )}
          </div>
          
-         <div className="flex-1 overflow-y-auto p-4 space-y-6">
-             <Comment user="Sarah D." time="10:23 AM" text="这里的红色饱和度能降低一点吗？" timestamp="00:02:14" active />
-             <Comment user="Mike R." time="11:05 AM" text="确认锁定。" timestamp="00:04:00" />
+         <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+             {comments.map(c => (
+                 <Comment 
+                    key={c.id} 
+                    user={c.user} 
+                    time={c.time} 
+                    text={c.text} 
+                    timestamp={c.timestamp} 
+                    active={c.active} 
+                />
+             ))}
          </div>
 
          <div className="p-4 border-t border-zinc-800 bg-zinc-900">
              <div className="relative">
                  <input 
                     type="text" 
-                    placeholder="在 00:02:14 添加评论..." 
+                    value={commentInput}
+                    onChange={(e) => setCommentInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                    placeholder="在 00:02:14 添加批注..." 
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-4 pr-10 py-3 text-sm text-zinc-200 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all"
                  />
-                 <button className="absolute right-2 top-2 p-1 text-zinc-500 hover:text-indigo-400">
-                     <Mic className="w-4 h-4" />
+                 <button 
+                    onClick={handleAddComment}
+                    className="absolute right-2 top-2 p-1 text-zinc-500 hover:text-indigo-400 transition-colors"
+                 >
+                     {commentInput.trim() ? <Send className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                  </button>
              </div>
          </div>

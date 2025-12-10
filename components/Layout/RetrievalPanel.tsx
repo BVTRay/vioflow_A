@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Plus, Filter, Folder, MoreHorizontal, Check, Archive, Calendar, LayoutGrid, Clapperboard, X, ChevronDown, User, Users, PlayCircle, Settings, Trash2 } from 'lucide-react';
+import { Search, Plus, Filter, Folder, MoreHorizontal, Check, Archive, Calendar, LayoutGrid, Clapperboard, X, ChevronDown, User, Users, PlayCircle, Settings, Trash2, Lock } from 'lucide-react';
 import { useStore } from '../../App';
 import { Project } from '../../types';
 
@@ -39,6 +39,13 @@ export const RetrievalPanel: React.FC = () => {
       mode: 'create' | 'edit';
       editingProjectId?: string;
   }>({ isOpen: false, mode: 'create' });
+
+  // Unlock Modal State (For Finalized Projects)
+  const [unlockModal, setUnlockModal] = useState<{
+      isOpen: boolean;
+      project?: Project;
+      justification: string;
+  }>({ isOpen: false, justification: '' });
 
   const [formData, setFormData] = useState({ 
       name: '', 
@@ -91,6 +98,22 @@ export const RetrievalPanel: React.FC = () => {
     setModalConfig({ isOpen: true, mode: 'create' });
   };
 
+  const handleEditClick = (e: React.MouseEvent, project: Project) => {
+      e.stopPropagation();
+      
+      // Protection Logic: If Finalized, show Unlock Warning
+      if (project.status === 'finalized' || project.status === 'delivered') {
+          setUnlockModal({
+              isOpen: true,
+              project,
+              justification: ''
+          });
+          return;
+      }
+
+      handleOpenEditModal(project);
+  };
+
   const handleOpenEditModal = (project: Project) => {
       setFormData({
           name: project.name,
@@ -103,6 +126,16 @@ export const RetrievalPanel: React.FC = () => {
           newMemberInput: ''
       });
       setModalConfig({ isOpen: true, mode: 'edit', editingProjectId: project.id });
+  };
+
+  const handleConfirmUnlock = () => {
+      if (unlockModal.justification.trim() && unlockModal.project) {
+          // Log logic could go here
+          // Close Unlock Modal and Open Edit Modal
+          const proj = unlockModal.project;
+          setUnlockModal({ isOpen: false, justification: '', project: undefined });
+          handleOpenEditModal(proj);
+      }
   };
 
   const handleConfirmModal = () => {
@@ -199,10 +232,11 @@ export const RetrievalPanel: React.FC = () => {
       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
          {activeModule === 'review' && (
              <button 
-                onClick={(e) => { e.stopPropagation(); handleOpenEditModal(project); }}
+                onClick={(e) => handleEditClick(e, project)}
                 className="p-1 hover:bg-zinc-800 rounded text-zinc-500 hover:text-indigo-400"
+                title={project.status === 'finalized' ? "解锁并编辑" : "项目设置"}
              >
-                <Settings className="w-3.5 h-3.5" />
+                {project.status === 'finalized' ? <Lock className="w-3.5 h-3.5" /> : <Settings className="w-3.5 h-3.5" />}
              </button>
          )}
       </div>
@@ -442,6 +476,53 @@ export const RetrievalPanel: React.FC = () => {
         {activeModule === 'showcase' && (viewMode === 'group' ? renderShowcaseGroupTree() : renderShowcaseMonthTree())}
 
         </aside>
+
+        {/* UNLOCK / JUSTIFICATION MODAL */}
+        {unlockModal.isOpen && (
+            <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-zinc-900 border border-orange-500/30 w-full max-w-sm rounded-xl shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
+                     <div className="px-5 py-4 bg-orange-500/10 border-b border-orange-500/20 rounded-t-xl flex items-center gap-3">
+                         <div className="p-2 bg-orange-500/20 rounded-full text-orange-500">
+                             <Lock className="w-5 h-5" />
+                         </div>
+                         <div>
+                             <h3 className="font-semibold text-orange-200">项目已定版锁定</h3>
+                             <p className="text-xs text-orange-300/70">该项目处于定版状态，编辑受限。</p>
+                         </div>
+                     </div>
+                     <div className="p-6 space-y-4">
+                         <p className="text-sm text-zinc-300">
+                            为了保证交付内容的一致性，修改已定版项目的设置需要填写修改说明。
+                         </p>
+                         <div>
+                             <label className="block text-xs font-bold text-zinc-500 uppercase mb-1.5">修改 / 解锁说明</label>
+                             <textarea 
+                                autoFocus
+                                className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200 focus:border-orange-500 outline-none resize-none h-24 placeholder-zinc-600"
+                                placeholder="请说明为什么需要修改项目信息..."
+                                value={unlockModal.justification}
+                                onChange={(e) => setUnlockModal({...unlockModal, justification: e.target.value})}
+                             />
+                         </div>
+                     </div>
+                     <div className="p-4 border-t border-zinc-800 flex justify-end gap-3 bg-zinc-950 rounded-b-xl">
+                        <button 
+                            onClick={() => setUnlockModal({...unlockModal, isOpen: false})}
+                            className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200"
+                        >
+                            取消
+                        </button>
+                        <button 
+                            disabled={!unlockModal.justification.trim()}
+                            onClick={handleConfirmUnlock}
+                            className="px-4 py-2 text-sm bg-orange-600 hover:bg-orange-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white font-medium rounded-lg transition-colors"
+                        >
+                            解锁并编辑
+                        </button>
+                     </div>
+                </div>
+            </div>
+        )}
 
         {/* CREATE / EDIT MODAL */}
         {modalConfig.isOpen && (

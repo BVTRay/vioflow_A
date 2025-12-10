@@ -37,6 +37,7 @@ const initialState: AppState = {
   deliveries: INITIAL_DELIVERIES,
   cart: [],
   uploadQueue: [],
+  notifications: [], // Initial Notifications
   selectedProjectId: 'p1',
   selectedVideoId: null,
   isReviewMode: false,
@@ -156,6 +157,10 @@ function appReducer(state: AppState, action: Action): AppState {
         ...state,
         uploadQueue: state.uploadQueue.filter(item => item.id !== action.payload)
       };
+    case 'ADD_NOTIFICATION':
+      return { ...state, notifications: [action.payload, ...state.notifications] };
+    case 'CLEAR_NOTIFICATIONS':
+      return { ...state, notifications: [] };
     default:
       return state;
   }
@@ -206,6 +211,34 @@ const App: React.FC = () => {
     </div>
   );
 
+  const renderNotificationsContent = () => (
+    state.notifications.length === 0 ? (
+      <div className="flex flex-col items-center justify-center h-40 text-zinc-500">
+          <BellRing className="w-8 h-8 mb-2 opacity-20" />
+          <p className="text-xs">暂无新通知</p>
+      </div>
+    ) : (
+      <div className="space-y-3">
+          {state.notifications.map(n => (
+              <div key={n.id} className="p-3 bg-zinc-900 border border-zinc-800 rounded-lg flex gap-3 animate-in slide-in-from-right-2 duration-300">
+                  <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${n.type === 'success' ? 'bg-emerald-500' : n.type === 'alert' ? 'bg-orange-500' : 'bg-indigo-500'}`} />
+                  <div>
+                      <h4 className="text-sm text-zinc-200 font-medium">{n.title}</h4>
+                      <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{n.message}</p>
+                      <span className="text-[10px] text-zinc-600 mt-2 block">{n.time}</span>
+                  </div>
+              </div>
+          ))}
+          <button 
+            onClick={() => dispatch({type: 'CLEAR_NOTIFICATIONS'})} 
+            className="w-full py-2 text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 rounded transition-colors"
+          >
+            清空通知
+          </button>
+      </div>
+    )
+  );
+
   return (
     <StoreContext.Provider value={{ state, dispatch }}>
       <div className="bg-zinc-950 min-h-screen text-zinc-200 font-sans selection:bg-indigo-500/30">
@@ -242,9 +275,9 @@ const App: React.FC = () => {
         <Drawer 
           isOpen={state.activeDrawer === 'messages'} 
           onClose={() => dispatch({ type: 'TOGGLE_DRAWER', payload: 'none' })} 
-          title="通知消息"
+          title={`通知消息 (${state.notifications.length})`}
         >
-            <div className="p-4 text-zinc-500 text-sm">暂无新通知。</div>
+            {renderNotificationsContent()}
         </Drawer>
 
       </div>
