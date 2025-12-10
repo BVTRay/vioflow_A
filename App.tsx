@@ -5,6 +5,7 @@ import { Sidebar } from './components/Layout/Sidebar';
 import { RetrievalPanel } from './components/Layout/RetrievalPanel';
 import { Workbench } from './components/Layout/Workbench';
 import { MainBrowser } from './components/Layout/MainBrowser';
+import { Dashboard } from './components/Layout/Dashboard';
 import { ReviewOverlay } from './components/Layout/ReviewOverlay';
 import { Drawer } from './components/UI/Drawer';
 import { AppState, Action, Project, Video, DeliveryData } from './types';
@@ -26,22 +27,45 @@ const INITIAL_VIDEOS: Video[] = [
 ];
 
 const INITIAL_DELIVERIES: DeliveryData[] = [
-  { projectId: 'p3', hasCleanFeed: true, hasMusicAuth: false, hasMetadata: true }, // Pending
-  { projectId: 'p4', hasCleanFeed: true, hasMusicAuth: true, hasMetadata: true, sentDate: '2024-10-25' }, // Delivered
+  { 
+    projectId: 'p3', 
+    caseVideoIds: [], 
+    tags: [], 
+    uploadCleanFeed: false, 
+    uploadScript: false, 
+    uploadRights: false, 
+    checkTech: false, 
+    checkRights: false, 
+    checkMeta: false 
+  }, // Pending
+  { 
+    projectId: 'p4', 
+    caseVideoIds: ['v3'], 
+    tags: ['汽车', 'TVC', '4K'], 
+    uploadCleanFeed: true, 
+    uploadScript: true, 
+    uploadRights: true, 
+    checkTech: true, 
+    checkRights: true, 
+    checkMeta: true,
+    sentDate: '2024-10-25' 
+  }, // Delivered
 ];
 
 const initialState: AppState = {
-  activeModule: 'review',
+  activeModule: 'dashboard', // Default to Dashboard
   projects: INITIAL_PROJECTS,
   videos: INITIAL_VIDEOS,
   deliveries: INITIAL_DELIVERIES,
   cart: [],
   uploadQueue: [],
-  notifications: [], // Initial Notifications
-  selectedProjectId: 'p1',
+  notifications: [
+    { id: 'n1', type: 'info', title: '欢迎使用 Vioflow', message: '系统已成功加载，您可以开始创建新项目。', time: '刚刚' }
+  ],
+  selectedProjectId: null, // Reset selection
   selectedVideoId: null,
   isReviewMode: false,
-  showWorkbench: false, // Default to hidden
+  showWorkbench: false,
   activeDrawer: 'none',
   searchTerm: '',
   activeTag: '全部',
@@ -95,29 +119,42 @@ function appReducer(state: AppState, action: Action): AppState {
       const deliveryExists = state.deliveries.find(d => d.projectId === action.payload);
       const newDeliveries = deliveryExists 
         ? state.deliveries 
-        : [...state.deliveries, { projectId: action.payload, hasCleanFeed: false, hasMusicAuth: false, hasMetadata: false }];
+        : [...state.deliveries, { 
+            projectId: action.payload, 
+            caseVideoIds: [],
+            tags: [],
+            uploadCleanFeed: false, 
+            uploadScript: false, 
+            uploadRights: false, 
+            checkTech: false, 
+            checkRights: false, 
+            checkMeta: false 
+          }];
       
       return { ...state, projects: updatedProjects, deliveries: newDeliveries, selectedProjectId: null };
     }
     case 'COMPLETE_DELIVERY': {
+      // 1. Mark Project as Delivered
       const updatedProjects = state.projects.map(p => 
         p.id === action.payload ? { ...p, status: 'delivered' as const } : p
       );
-      return { ...state, projects: updatedProjects, selectedProjectId: null };
+      
+      // 2. Mark Case Videos for Showcase (from Delivery Data)
+      const delivery = state.deliveries.find(d => d.projectId === action.payload);
+      const updatedVideos = state.videos.map(v => 
+        (delivery?.caseVideoIds || []).includes(v.id) ? { ...v, isCaseFile: true } : v
+      );
+
+      return { ...state, projects: updatedProjects, videos: updatedVideos, selectedProjectId: null };
     }
-    case 'UPDATE_DELIVERY_CHECKLIST': {
+    case 'UPDATE_DELIVERY_DATA': {
       return {
         ...state,
         deliveries: state.deliveries.map(d => 
-          d.projectId === action.payload.projectId ? { ...d, [action.payload.field]: action.payload.value } : d
+          d.projectId === action.payload.projectId ? { ...d, ...action.payload.data } : d
         )
       };
     }
-    case 'TOGGLE_CASE_FILE':
-      return {
-        ...state,
-        videos: state.videos.map(v => v.id === action.payload ? { ...v, isCaseFile: !v.isCaseFile } : v)
-      };
     case 'UPDATE_VIDEO_STATUS':
       return {
         ...state,
@@ -253,11 +290,16 @@ const App: React.FC = () => {
           onChangeModule={(mod) => dispatch({ type: 'SET_MODULE', payload: mod })} 
         />
 
-        <RetrievalPanel />
-
-        <Workbench visible={state.showWorkbench} />
-
-        <MainBrowser />
+        {/* CONDITIONAL RENDER: Dashboard vs Standard Layout */}
+        {state.activeModule === 'dashboard' ? (
+            <Dashboard />
+        ) : (
+            <>
+                <RetrievalPanel />
+                <Workbench visible={state.showWorkbench} />
+                <MainBrowser />
+            </>
+        )}
 
         <ReviewOverlay 
           isOpen={state.isReviewMode} 

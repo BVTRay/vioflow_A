@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PlayCircle, Settings, HardDrive, Clapperboard } from 'lucide-react';
+import { PlayCircle, Settings, HardDrive, Clapperboard, LayoutDashboard } from 'lucide-react';
 import { ModuleType } from '../../types';
 
 interface SidebarProps {
@@ -10,6 +10,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeModule, onChangeModule }) => {
   const navItems = [
+    { id: 'dashboard', icon: LayoutDashboard, label: '首页', type: 'dashboard' as ModuleType },
     { id: 'review', icon: PlayCircle, label: '审阅', type: 'review' as ModuleType },
     { id: 'delivery', icon: HardDrive, label: '交付', type: 'delivery' as ModuleType },
     { id: 'showcase', icon: Clapperboard, label: '案例', type: 'showcase' as ModuleType },

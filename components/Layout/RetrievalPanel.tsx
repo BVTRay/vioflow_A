@@ -376,9 +376,12 @@ export const RetrievalPanel: React.FC = () => {
 
   const renderShowcaseMonthTree = () => {
       const caseVideos = videos.filter(v => v.isCaseFile);
+      // Filter by search term
+      const filteredVideos = caseVideos.filter(v => v.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
       const months = {
-          '2025年 1月': caseVideos.filter((_, i) => i % 2 === 0),
-          '2024年 12月': caseVideos.filter((_, i) => i % 2 !== 0),
+          '2025年 1月': filteredVideos.filter((_, i) => i % 2 === 0),
+          '2024年 12月': filteredVideos.filter((_, i) => i % 2 !== 0),
       };
 
       return (
@@ -391,14 +394,17 @@ export const RetrievalPanel: React.FC = () => {
                           <span className="ml-auto bg-zinc-800 text-zinc-400 px-1.5 rounded-full text-[9px]">{monthVideos.length}</span>
                       </div>
                       <div className="space-y-0.5">
+                          {monthVideos.length === 0 && <div className="text-xs text-zinc-700 px-2 italic">无匹配</div>}
                           {monthVideos.map(v => (
                               <div 
                                 key={v.id} 
                                 onClick={() => dispatch({ type: 'SELECT_VIDEO', payload: v.id })}
                                 className="flex items-center gap-2 p-2 rounded hover:bg-zinc-900 cursor-pointer text-zinc-400 hover:text-zinc-200 transition-colors"
                               >
-                                  <Clapperboard className="w-3.5 h-3.5" />
-                                  <span className="text-sm truncate">{v.name}</span>
+                                  <Clapperboard className="w-3.5 h-3.5 shrink-0" />
+                                  <span className="text-sm truncate" title={v.name}>
+                                    <HighlightText text={v.name} highlight={searchTerm} />
+                                  </span>
                               </div>
                           ))}
                       </div>
@@ -415,42 +421,40 @@ export const RetrievalPanel: React.FC = () => {
         
         {/* Header */}
         <div className="h-14 flex items-center justify-between px-4 border-b border-zinc-800 shrink-0">
-            <span className="text-sm font-semibold text-zinc-200">
+            <span className="text-sm font-semibold text-zinc-200 truncate">
                 {activeModule === 'review' && '快速检索'}
                 {activeModule === 'delivery' && '交付中心'}
                 {activeModule === 'showcase' && '案例遴选'}
             </span>
-            <div className="flex items-center gap-1">
-            <div className="flex items-center bg-zinc-950 rounded-lg p-0.5 mr-2 border border-zinc-800">
-                <button 
-                    onClick={() => setViewMode('month')}
-                    className={`p-1 rounded transition-colors ${viewMode === 'month' ? 'bg-zinc-800 text-zinc-100 shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-                    title="月份视图"
-                >
-                    <Calendar className="w-3.5 h-3.5" />
-                </button>
-                <button 
-                    onClick={() => setViewMode('group')}
-                    className={`p-1 rounded transition-colors ${viewMode === 'group' ? 'bg-zinc-800 text-zinc-100 shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-                    title="分组视图"
-                >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                </button>
-            </div>
-
-            <button className="p-1.5 hover:bg-zinc-900 rounded text-zinc-500 hover:text-zinc-300 transition-colors">
-                <Filter className="w-4 h-4" />
-            </button>
-            
-            {/* New Project Button - Prominent */}
-            {activeModule === 'review' && (
-                <button 
-                    onClick={handleOpenCreateModal}
-                    className="ml-1 p-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded shadow-sm shadow-indigo-900/20 transition-all hover:scale-105"
-                >
-                    <Plus className="w-4 h-4" />
-                </button>
-            )}
+            <div className="flex items-center">
+                {/* View Toggle (Segmented Control) */}
+                <div className="flex items-center bg-zinc-950 rounded-md p-1 border border-zinc-800 mr-2">
+                    <button 
+                        onClick={() => setViewMode('month')}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-medium transition-all ${viewMode === 'month' ? 'bg-zinc-800 text-zinc-100 shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    >
+                        <Calendar className="w-3.5 h-3.5" />
+                        月份
+                    </button>
+                    <button 
+                        onClick={() => setViewMode('group')}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-medium transition-all ${viewMode === 'group' ? 'bg-zinc-800 text-zinc-100 shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    >
+                        <LayoutGrid className="w-3.5 h-3.5" />
+                        分组
+                    </button>
+                </div>
+                
+                {/* New Project Button - Prominent */}
+                {activeModule === 'review' && (
+                    <button 
+                        onClick={handleOpenCreateModal}
+                        className="ml-1 p-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md shadow-sm shadow-indigo-900/20 transition-all hover:scale-105"
+                        title="新建项目"
+                    >
+                        <Plus className="w-4 h-4" />
+                    </button>
+                )}
             </div>
         </div>
 
@@ -463,7 +467,7 @@ export const RetrievalPanel: React.FC = () => {
                 placeholder={activeModule === 'showcase' ? "搜索案例视频..." : "筛选项目..."}
                 value={searchTerm}
                 onChange={(e) => dispatch({ type: 'SET_SEARCH', payload: e.target.value })}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
             />
             </div>
         </div>

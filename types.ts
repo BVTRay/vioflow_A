@@ -1,5 +1,5 @@
 
-export type ModuleType = 'library' | 'review' | 'delivery' | 'showcase' | 'settings';
+export type ModuleType = 'dashboard' | 'review' | 'delivery' | 'showcase' | 'settings';
 export type ProjectStatus = 'active' | 'finalized' | 'delivered' | 'archived';
 export type VideoStatus = 'initial' | 'annotated' | 'approved';
 
@@ -33,9 +33,19 @@ export interface Project {
 
 export interface DeliveryData {
   projectId: string;
-  hasCleanFeed: boolean;
-  hasMusicAuth: boolean;
-  hasMetadata: boolean;
+  // Step 1: Master Files
+  caseVideoIds: string[];
+  // Step 2: Tags
+  tags: string[];
+  // Step 3: Uploads
+  uploadCleanFeed: boolean;
+  uploadScript: boolean;
+  uploadRights: boolean;
+  // Step 4: Checklist
+  checkTech: boolean;
+  checkRights: boolean;
+  checkMeta: boolean;
+  
   packageLink?: string;
   sentDate?: string;
 }
@@ -88,8 +98,7 @@ export type Action =
   | { type: 'ADD_VIDEO'; payload: Video }
   | { type: 'FINALIZE_PROJECT'; payload: string } // Review -> Delivery
   | { type: 'COMPLETE_DELIVERY'; payload: string } // Delivery -> Archive/Showcase Source
-  | { type: 'UPDATE_DELIVERY_CHECKLIST'; payload: { projectId: string; field: keyof DeliveryData; value: boolean } }
-  | { type: 'TOGGLE_CASE_FILE'; payload: string } // Toggle isCaseFile on a Video
+  | { type: 'UPDATE_DELIVERY_DATA'; payload: { projectId: string; data: Partial<DeliveryData> } }
   | { type: 'TOGGLE_CART_ITEM'; payload: string } // Showcase Cart
   | { type: 'SET_SEARCH'; payload: string }
   | { type: 'SET_TAG'; payload: string }
